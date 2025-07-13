@@ -2,11 +2,11 @@ import asyncio
 import os
 import logging
 import json
+import mcp.types as types
 
 from mcp.server.fastmcp.server import Context, FastMCP
 from typing import Any, Dict, List
-import mcp.types as types
-from src.utils.frappeclient import FrappeClient, FrappeException
+from utils.frappeclient import FrappeClient, FrappeException
 
 # Configure logging
 logging.basicConfig(

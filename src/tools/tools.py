@@ -3,13 +3,13 @@ import logging
 import os
 import inspect
 import asyncio
+import mcp.types as types
 # Use python-dotenv to load environment variables from a .env file
 from dotenv import load_dotenv
 # Assuming the user is using the mcp-server library as hinted by the original file
 from mcp.server.fastmcp.server import Context, FastMCP
 from typing import Any, List, Callable
-import mcp.types as types
-from src.utils.frappeclient import FrappeClient, FrappeException
+from utils.frappeclient import FrappeClient, FrappeException
 
 # Load environment variables from .env file in the project root
 load_dotenv()

@@ -5,11 +5,11 @@ from contextlib import asynccontextmanager
 # Assuming the user is using the mcp-server library as hinted by the original file
 from dotenv import load_dotenv
 from mcp.server import FastMCP
-from src.tools.tools import _register_tools
-from src.resources.schema import _register_resources
-from src.prompts.prompts import _register_prompts
-from src.utils.frappeclient import FrappeClient
-from src.prompts import prompts
+from tools.tools import _register_tools
+from resources.schema import _register_resources
+from prompts.prompts import _register_prompts
+from utils.frappeclient import FrappeClient
+from prompts import prompts
 
 # Load environment variables from .env file
 load_dotenv()
