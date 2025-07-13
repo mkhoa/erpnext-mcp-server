@@ -15,4 +15,4 @@ dependencies = [
 ]
 
 [project.scripts]
-erpnext-mcp-server = "src.main:mcp.run"
+erpnext-mcp-server = "main:mcp.run"
