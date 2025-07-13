@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from base64 import b64encode
 from urllib.parse import quote
 from io import StringIO
+from typing import Optional
 
 # Load environment variables from .env file in the project root
 load_dotenv()
@@ -195,9 +196,17 @@ class FrappeClient(object):
 			return item_list[0].get("name")
 		return None
 
-	def get_stock_balance(self, item_code: str) -> float:
-		"""Query a Stock Balance of an item_code"""
-		return self.get_api('erpnext.stock.utils.get_stock_balance', params={'item_code': item_code})
+	def get_warehouse_code(self, warehouse_name: str) -> str | None:
+		"""Look up for Warehouse Code from Warehouse Name"""
+		filters = {"warehouse_name": ["like", f"%{warehouse_name}%"]}
+		warehouse_list = self.get_list("Warehouse", fields=["name"], filters=filters, limit_page_length=1)
+		if warehouse_list:
+			return warehouse_list[0].get("name")
+		return None
+
+	def get_latest_stock_qty(self, item_code: str, warehouse: Optional[str] = None) -> float:
+		"""Query a lasted stock quantity of an item_code"""
+		return self.get_api('erpnext.stock.utils.get_latest_stock_qty', params={'item_code': item_code, 'warehouse': warehouse})
 
 	def get_customer_outstanding_balance(self, customer_code: str) -> float:
 		"""Query Outstanding AR Balance of a Customer_Code"""
