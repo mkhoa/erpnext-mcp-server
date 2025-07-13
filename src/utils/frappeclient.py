@@ -201,7 +201,7 @@ class FrappeClient(object):
 
 	def get_customer_outstanding_balance(self, customer_code: str) -> float:
 		"""Query Outstanding AR Balance of a Customer_Code"""
-		return self.get_api('erpnext.accounts.doctype.customer.customer.get_customer_outstanding',
+		return self.get_api('erpnext.selling.doctype.customer.customer.get_customer_outstanding',
 			params={'customer': customer_code})
 
 	def rename_doc(self, doctype, old_name, new_name):
