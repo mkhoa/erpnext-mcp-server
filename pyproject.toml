@@ -1,11 +1,11 @@
 [project]
 name = "erpnext-mcp-server"
 version = "0.1.0"
-description = "Add your description here"
+description = "An MCP server for interacting with an ERPNext instance."
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
+license = "MIT"
 dependencies = [
-    "requests",
     "mcp[cli]>=1.10.1",
     "python-dotenv>=1.0.0",
     "httpx>=0.27.0",

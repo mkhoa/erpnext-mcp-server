@@ -9,12 +9,6 @@ from io import StringIO
 
 # Load environment variables from .env file in the project root
 load_dotenv()
-
-try:
-    unicode
-except NameError:
-    unicode = str
-	
 class AuthError(Exception):
 	pass
 
@@ -50,7 +44,7 @@ class FrappeClient(object):
 		r = self.session.post(self.url, data={
 			'cmd': 'login',
 			'usr': username,
-			'pwd': password
+			'pwd': password,
 		}, verify=self.verify, headers=self.headers)
 
 		if r.json().get('message') == "Logged In":
@@ -70,9 +64,7 @@ class FrappeClient(object):
 		})
 
 	def get_list(self, doctype, fields=["*"], filters=None, limit_start=0, limit_page_length=0, order_by=None):
-		'''Returns list of records of a particular type'''
-		if not isinstance(fields, unicode):
-			fields = json.dumps(fields)
+		fields = json.dumps(fields)
 		params = {
 			"fields": fields,
 		}
@@ -85,14 +77,14 @@ class FrappeClient(object):
 			params['order_by'] = order_by
 
 		res = self.session.get(self.url + "/api/resource/" + doctype, params=params,
-			verify=self.verify, headers=self.headers)
+			verify=self.verify, headers=self.headers, timeout=30)
 		return self.post_process(res)
 
 	def insert(self, doc):
 		'''Insert a document to the remote server
 
 		:param doc: A dict or Document object to be inserted remotely'''
-		res = self.session.post(self.url + "/api/resource/" + quote(doc.get("doctype")),
+		res = self.session.post(self.url + "/api/resource/" + quote(doc.get("doctype")), timeout=30,
 			data={"data":json.dumps(doc)})
 		return self.post_process(res)
 
@@ -110,7 +102,7 @@ class FrappeClient(object):
 
 		:param doc: dict or Document object to be updated remotely. `name` is mandatory for this'''
 		url = self.url + "/api/resource/" + quote(doc.get("doctype")) + "/" + quote(doc.get("name"))
-		res = self.session.put(url, data={"data":json.dumps(doc)})
+		res = self.session.put(url, data={"data":json.dumps(doc)}, timeout=30)
 		return self.post_process(res)
 
 	def bulk_update(self, docs):
@@ -179,12 +171,12 @@ class FrappeClient(object):
 		if fields:
 			params["fields"] = json.dumps(fields)
 		
-		res = self.session.get(self.url + '/api/resource/' + doctype + '/' + name,
+		res = self.session.get(self.url + '/api/resource/' + doctype + '/' + name, timeout=30,
 							   params=params)
 		
 		return self.post_process(res)
 
-	def get_customer_code(self, customer_name):
+	def get_customer_code(self, customer_name: str) -> str | None:
 		"""Look up for Customer Code from Customer Name"""
 		filters = {"customer_name": ["like", f"%{customer_name}%"]}
 		customer_list = self.get_list("Customer", fields=["name"], filters=filters, limit_page_length=1)
@@ -192,22 +184,22 @@ class FrappeClient(object):
 			return customer_list[0].get("name")
 		return None
 
-	def get_item_code(self, item_query):
+	def get_item_code(self, item_query: str) -> str | None:
 		"""Look up for Item_Code from Item Description or Item Name"""
 		filters = [
 			['item_name', 'like', f'%{item_query}%'],
 			['description', 'like', f'%{item_query}%']
 		]
-		item_list = self.get_list("Item", fields=["name"], filters=filters, limit_page_length=1)
+		item_list = self.get_list("Item", fields=["name"], filters=filters, or_filters=1, limit_page_length=1)
 		if item_list:
 			return item_list[0].get("name")
 		return None
 
-	def get_stock_balance(self, item_code):
+	def get_stock_balance(self, item_code: str) -> float:
 		"""Query a Stock Balance of an item_code"""
 		return self.get_api('erpnext.stock.utils.get_stock_balance', params={'item_code': item_code})
 
-	def get_customer_outstanding_balance(self, customer_code):
+	def get_customer_outstanding_balance(self, customer_code: str) -> float:
 		"""Query Outstanding AR Balance of a Customer_Code"""
 		return self.get_api('erpnext.accounts.doctype.customer.customer.get_customer_outstanding',
 			params={'customer': customer_code})
@@ -235,7 +227,7 @@ class FrappeClient(object):
 		}
 		response = self.session.get(
 			self.url + '/api/method/frappe.templates.pages.print.download_pdf',
-			params=params, stream=True)
+			params=params, stream=True, timeout=30)
 
 		return self.post_process_file_stream(response)
 
@@ -247,7 +239,7 @@ class FrappeClient(object):
 			'no_letterhead': int(not bool(letterhead))
 		}
 		response = self.session.get(
-			self.url + '/print', params=params, stream=True
+			self.url + '/print', params=params, stream=True, timeout=30
 		)
 		return self.post_process_file_stream(response)
 
@@ -270,25 +262,25 @@ class FrappeClient(object):
 
 		request = self.session.get(
 			self.url + '/api/method/frappe.core.page.data_import_tool.exporter.get_template',
-			params=params
+			params=params, timeout=30
 		)
 		return self.post_process_file_stream(request)
 
 	def get_api(self, method, params={}):
-		res = self.session.get(self.url + '/api/method/' + method + '/', params=params)
+		res = self.session.get(self.url + '/api/method/' + method + '/', params=params, timeout=30)
 		return self.post_process(res)
 
 	def post_api(self, method, params={}):
-		res = self.session.post(self.url + '/api/method/' + method + '/', params=params)
+		res = self.session.post(self.url + '/api/method/' + method + '/', params=params, timeout=30)
 		return self.post_process(res)
 
 	def get_request(self, params):
-		res = self.session.get(self.url, params=self.preprocess(params))
+		res = self.session.get(self.url, params=self.preprocess(params), timeout=30)
 		res = self.post_process(res)
 		return res
 
 	def post_request(self, data):
-		res = self.session.post(self.url, data=self.preprocess(data))
+		res = self.session.post(self.url, data=self.preprocess(data), timeout=30)
 		res = self.post_process(res)
 		return res
 
