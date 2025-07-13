@@ -64,13 +64,15 @@ class FrappeClient(object):
 			'cmd': 'logout',
 		})
 
-	def get_list(self, doctype, fields=["*"], filters=None, limit_start=0, limit_page_length=0, order_by=None):
+	def get_list(self, doctype, fields=["*"], filters=None, or_filters=None, limit_start=0, limit_page_length=0, order_by=None):
 		fields = json.dumps(fields)
 		params = {
 			"fields": fields,
 		}
 		if filters:
 			params["filters"] = json.dumps(filters)
+		if or_filters:
+			params["or_filters"] = json.dumps(or_filters)
 		if limit_page_length:
 			params["limit_start"] = limit_start
 			params["limit_page_length"] = limit_page_length
@@ -186,12 +188,16 @@ class FrappeClient(object):
 		return None
 
 	def get_item_code(self, item_query: str) -> str | None:
-		"""Look up for Item_Code from Item Description or Item Name"""
-		filters = [
-			['item_name', 'like', f'%{item_query}%'],
-			['description', 'like', f'%{item_query}%']
+		"""Look up for Item_Code from Item Description or Item Name or Item Code itself"""
+		# Convert spaces to SQL wildcards to handle missing middle words/characters.
+		wildcard_query = '%'.join(item_query.split())
+
+		or_filters = [
+			['name', 'like', f'%{wildcard_query}%'],
+			['item_name', 'like', f'%{wildcard_query}%'],
+			['description', 'like', f'%{wildcard_query}%']
 		]
-		item_list = self.get_list("Item", fields=["name"], filters=filters, or_filters=1, limit_page_length=1)
+		item_list = self.get_list("Item", fields=["name"], or_filters=or_filters, limit_page_length=1)
 		if item_list:
 			return item_list[0].get("name")
 		return None
