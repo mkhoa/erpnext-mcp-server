@@ -42,5 +42,9 @@ _register_tools(mcp)
 _register_resources(mcp)
 _register_prompts(mcp)
 
-if __name__ == "__main__":
+def main():
+    """Script entry point to run the MCP server."""
     mcp.run(transport="stdio")
+
+if __name__ == "__main__":
+    main()
